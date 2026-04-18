@@ -101,7 +101,7 @@ int do_noquantum(message *m_ptr)
 	/* Incrementamos el contador porque se agoto el quantum */
 
 	rmp->consumed_quantums += 1;
-	printf("DEBUG do_noquantum: PID %d, Consumed: %d, Prio: %d\n", rmp->endpoint, rmp->consumed_quantums, rmp->priority);
+
 
 
 
@@ -371,7 +371,7 @@ void balance_queues(void)
 
 	for (proc_nr=0, rmp=schedproc; proc_nr < NR_PROCS; proc_nr++, rmp++) {
 		if (rmp->flags & IN_USE) {
-			printf("DEBUG balance_queues: PID %d, Prio: %d, Consumed: %d\n", rmp->endpoint, rmp->priority, rmp->consumed_quantums);
+
 
 			/* Nueva logica de recuperacion */
 			if (rmp->consumed_quantums == 0) {		
