@@ -96,10 +96,21 @@ int do_noquantum(message *m_ptr)
 	}
 
 	rmp = &schedproc[proc_nr_n];
-	if (rmp->priority < MIN_USER_Q) {
-		rmp->priority += 1; /* lower priority */
-	}
 
+
+	/* Incrementamos el contador porque se agoto el quantum */
+
+	rmp->consumed_quantums += 1;
+	printf("DEBUG do_noquantum: PID %d, Consumed: %d, Prio: %d\n", rmp->endpoint, rmp->consumed_quantums, rmp->priority);
+
+
+
+	/* Aqui verificamos si se debe penalizar */
+    	if (rmp->consumed_quantums >= 3) {
+		if (rmp->priority < MIN_USER_Q) {
+			rmp->priority += 1; /* lower priority */
+		}
+	}	
 	if ((rv = schedule_process_local(rmp)) != OK) {
 		return rv;
 	}
@@ -194,6 +205,8 @@ int do_start_scheduling(message *m_ptr)
 		 * from the parent */
 		rmp->priority   = rmp->max_priority;
 		rmp->time_slice = m_ptr->m_lsys_sched_scheduling_start.quantum;
+		/* Siguinte linea anadida en Proyecto */
+		rmp->consumed_quantums = 0;	/* Inicializando quantum */
 		break;
 		
 	case SCHEDULING_INHERIT:
@@ -352,18 +365,25 @@ void init_scheduling(void)
  */
 void balance_queues(void)
 {
+
 	struct schedproc *rmp;
 	int r, proc_nr;
 
 	for (proc_nr=0, rmp=schedproc; proc_nr < NR_PROCS; proc_nr++, rmp++) {
 		if (rmp->flags & IN_USE) {
-			if (rmp->priority > rmp->max_priority) {
-				rmp->priority -= 1; /* increase priority */
-				schedule_process_local(rmp);
-			}
+			printf("DEBUG balance_queues: PID %d, Prio: %d, Consumed: %d\n", rmp->endpoint, rmp->priority, rmp->consumed_quantums);
+
+			/* Nueva logica de recuperacion */
+			if (rmp->consumed_quantums == 0) {		
+				if (rmp->priority > rmp->max_priority) {
+					rmp->priority -= 1; /* increase priority */
+					schedule_process_local(rmp);
+				}
+			}	
 		}
 	}
-
+	/* Reinicio del contador para la proxima ventana */
+        rmp->consumed_quantums = 0;
 	if ((r = sys_setalarm(balance_timeout, 0)) != OK)
 		panic("sys_setalarm failed: %d", r);
 }

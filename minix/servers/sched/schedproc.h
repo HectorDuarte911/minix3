@@ -31,9 +31,10 @@ EXTERN struct schedproc {
 	unsigned time_slice;		/* this process's time slice */
 	unsigned cpu;		/* what CPU is the process running on */
 	bitchunk_t cpu_mask[BITMAP_CHUNKS(CONFIG_MAX_CPUS)]; /* what CPUs is the
-								process allowed
-								to run on */
-} schedproc[NR_PROCS];
+								process allowed to run on */
+	/* MODIFICACION PARA EL PROYECTO */
+        int consumed_quantums;  /* Contador de quantums consumidos en la ventana actual */						
+}schedproc[NR_PROCS];
 
 /* Flag values */
 #define IN_USE		0x00001	/* set when 'schedproc' slot in use */
