@@ -108,7 +108,13 @@ int do_noquantum(message *m_ptr)
 	/* Aqui verificamos si se debe penalizar */
     	if (rmp->consumed_quantums >= 3) {
 		if (rmp->priority < MIN_USER_Q) {
+			int vieja_q = rmp->priority;
 			rmp->priority += 1; /* lower priority */
+
+
+			printf("[SCHED] Proceso %d consumio quantum. Penalizado de cola %d a %d\n",rmp->endpoint,vieja_q,rmp->priority);
+
+
 		}
 	}	
 	if ((rv = schedule_process_local(rmp)) != OK) {
